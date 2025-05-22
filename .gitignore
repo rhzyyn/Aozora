@@ -1,0 +1,68 @@
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+# --------------------
+# Go-specific
+# --------------------
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace
+go.work
+go.work.sum
+
+# Dependency vendor folder
+# Uncomment if you're not vendoring
+# vendor/
+
+# --------------------
+# Terraform
+# --------------------
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+terraform.tfvars.json
+.crc
+
+# --------------------
+# Docker
+# --------------------
+*.local.yml
+docker-compose.override.yml
+docker/*.env
+docker/.env
+**/.env.docker
+
+# --------------------
+# Secrets (critical)
+# --------------------
+.env
+.env.*
+**/secrets.*
+*.pem
+*.key
+*.crt
+*.cert
+
+# --------------------
+# VSCode + IDEs
+# --------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --------------------
+# GitHub Actions
+# --------------------
+.github/token.json
+
+# Node.js
+node_modules/

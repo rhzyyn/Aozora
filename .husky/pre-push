@@ -1,0 +1,58 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "[Pre-Push] Running unit tests..."
+GO_PACKAGES=$(go list ./... 2>/dev/null | wc -l)
+
+if [ "$GO_PACKAGES" -eq 0 ]; then
+  echo "[Pre-Push] No Go packages found. Skipping tests."
+else
+  TEST_OUTPUT=$(go test ./... 2>&1)
+  TEST_EXIT=$?
+
+  if [ "$TEST_EXIT" -ne 0 ]; then
+    echo "$TEST_OUTPUT"
+    echo "[Pre-Push] Push blocked: Go tests failed."
+    exit 1
+  else
+    echo "$TEST_OUTPUT"
+    echo "[Pre-Push] Tests passed."
+  fi
+fi
+
+echo "[Pre-Push] Running golangci-lint..."
+if command -v golangci-lint >/dev/null 2>&1; then
+  # Run linter in isolated subshell to prevent exit code from leaking
+  LINT_EXIT=0
+  LINT_OUTPUT=$(sh -c 'golangci-lint run 2>&1') || LINT_EXIT=$?
+
+  if [ "$LINT_EXIT" -eq 5 ]; then
+    echo "[Pre-Push] golangci-lint: no analyzable Go files. Skipping lint."
+  elif [ "$LINT_EXIT" -ne 0 ]; then
+    echo "$LINT_OUTPUT"
+    echo "[Pre-Push] Push blocked: Linting errors detected."
+    exit 1
+  else
+    echo "[Pre-Push] Lint passed."
+  fi
+else
+  echo "[Pre-Push] golangci-lint not found. Skipping lint step."
+fi
+
+
+echo "[Pre-Push] Checking for forbidden file types (.env, .pem, .key, etc)..."
+GIT_DIFF=$(git diff --cached --name-only)
+if echo "$GIT_DIFF" | grep -E '\.env|\.pem|\.key|\.crt|\.cert'; then
+  echo '[Pre-Push] Push blocked: Potential secret file detected.'
+  exit 1
+fi
+
+echo "[Pre-Push] Scanning for high-risk tokens..."
+GIT_STAGED_CONTENT=$(git diff --cached)
+if echo "$GIT_STAGED_CONTENT" | grep -E 'AKIA[0-9A-Z]{16}|xox[baprs]-[0-9a-zA-Z]{10,48}' >/dev/null; then
+  echo '[Pre-Push] Push blocked: High-risk token pattern found.'
+  exit 1
+fi
+
+echo "[Pre-Push] All checks passed. Proceeding with push."
+exit 0
