@@ -1,3 +1,3 @@
-module Fauziyyan.Rahman.Employee
+module github.com/rhzyyn/Aozora/Microservices/Employee
 
-go 1.23.0
+go 1.24
