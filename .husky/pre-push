@@ -5,18 +5,18 @@ set -eo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 EMP_DIR="$REPO_ROOT/Microservices/Employee"
 
-echo "[Pre-Push] Running unit tests in Employee..."
-if (cd "$EMP_DIR" && GOWORK=off go list ./... >/dev/null 2>&1); then
-  (cd "$EMP_DIR" && GOWORK=off go test ./...)
+echo "[Pre-Push] Running unit tests in Employee (workspace)..."
+if (cd "$EMP_DIR" && GOWORK="$REPO_ROOT/go.work" go list ./... >/dev/null 2>&1); then
+  (cd "$EMP_DIR" && GOWORK="$REPO_ROOT/go.work" go test ./...)
   echo "[Pre-Push] Tests passed."
 else
   echo "[Pre-Push] No Go packages found in Employee. Skipping tests."
 fi
 
-echo "[Pre-Push] Running golangci-lint in Employee..."
+echo "[Pre-Push] Running golangci-lint in Employee (workspace)..."
 if command -v golangci-lint >/dev/null 2>&1; then
   golangci-lint cache clean >/dev/null 2>&1 || true
-  (cd "$EMP_DIR" && GOWORK=off golangci-lint run ./...)
+  (cd "$EMP_DIR" && GOWORK="$REPO_ROOT/go.work" golangci-lint run ./...)
   echo "[Pre-Push] Lint passed."
 else
   echo "[Pre-Push] golangci-lint not found. Skipping lint."
@@ -25,15 +25,13 @@ fi
 echo "[Pre-Push] Secret/file checks..."
 GIT_DIFF=$(git diff --cached --name-only)
 if echo "$GIT_DIFF" | grep -E '\.env|\.pem|\.key|\.crt|\.cert' >/dev/null; then
-  echo '[Pre-Push] Push blocked: Potential secret file detected.'
-  exit 1
+  echo '[Pre-Push] Push blocked: Potential secret file detected.'; exit 1
 fi
 
 echo "[Pre-Push] Scanning for high-risk tokens..."
 GIT_STAGED_CONTENT=$(git diff --cached)
 if echo "$GIT_STAGED_CONTENT" | grep -E 'AKIA[0-9A-Z]{16}|xox[baprs]-[0-9a-zA-Z]{10,48}' >/dev/null; then
-  echo '[Pre-Push] Push blocked: High-risk token pattern found.'
-  exit 1
+  echo '[Pre-Push] Push blocked: High-risk token pattern found.'; exit 1
 fi
 
 echo "[Pre-Push] All checks passed. Proceeding with push."
