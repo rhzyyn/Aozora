@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 . "$(dirname "$0")/_/husky.sh"
+set -eo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 EMP_DIR="$REPO_ROOT/Microservices/Employee"
