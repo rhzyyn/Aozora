@@ -1,7 +1,7 @@
-FROM golang:1.25 AS builder
+FROM golang:1.22.4-slim AS builder
 WORKDIR /app
 COPY . .
-RUN go build -o app-employee ./cmd/server
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/* && go build -o app-employee ./cmd/server
 
 FROM gcr.io/distroless/cc-debian12
 WORKDIR /app
