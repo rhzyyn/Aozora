@@ -1,4 +1,4 @@
-Aozora Employee Service — Dependency Documentation
+# Aozora Employee Service — Dependency Documentation
 
 This file documents every dependency declared in the go.mod file for the Employee microservice of the Aozora platform. Each dependency is grouped by category and includes a remark on its usage or purpose. This document supports strict compliance with Aozora’s 10/10 elite-tier, global-scale standards.
 
