@@ -13,10 +13,6 @@
 *.test
 *.out
 
-# Go workspace
-go.work
-go.work.sum
-
 # Dependency vendor folder
 # Uncomment if you're not vendoring
 # vendor/
